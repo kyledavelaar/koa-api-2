@@ -5,6 +5,8 @@ COPY package.json /usr/src/app
 COPY package-lock.json /usr/src/app
 
 RUN npm install
+# RUN npm install -g nodemon  # uncomment if in dev env
+
 # If you are building your code for production
 # RUN npm ci --only=production
 

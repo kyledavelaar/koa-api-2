@@ -12,6 +12,7 @@ services:
       - .:/usr/src/app
     depends_on:
       - database
+    # command: nodemon server.js # uncomment for live-reloading in dev env
 
   database: # name of the service
     image: mongo # specify image to build container from
