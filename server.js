@@ -62,6 +62,16 @@ consumer.on("message", function(message) {
   // { topic: 'cat', value: 'I have 385 cats', offset: 412, partition: 0, highWaterOffset: 413, key: null }
 });
 
+//----offset -----------------
+offset = new kafka.Offset(client);
+offset.fetch([ { topic: 'cat', partition: 0, time: Date.now(), maxNum: 1 }], function (err, data) {
+    console.log('offset data', data)
+    // { 't': { '0': [999] } }
+});
+
+offset.fetchCommitsV1('groupId', [ { topic: 'cat', partition: 0 } ], function (err, data) {
+  console.log('fetch commitsV1', data)
+});
 
 
 //------------------
