@@ -52,12 +52,56 @@ app.use(router.allowedMethods())
 /////////////////////////////////////////////////
 const Consumer = kafka.Consumer;
 const client = new kafka.KafkaClient('localhost:2181');
-const consumer = new Consumer(client, [{ topic: "cat", partition: 0 }], { autoCommit: false });
+const consumer = new Consumer(client, [{ topic: "cat", partition: 0 }], { autoCommit: false, encoding: 'buffer' });
 
 consumer.on("message", function(message) {
-  console.log(message.topic, ' : ', message.value);
+  let str = Buffer.from(message.value).toString();
+  console.log('string', str)
+  // console.log('message', message);
+  // console.log(message.topic, ' : ', message.value);
   // { topic: 'cat', value: 'I have 385 cats', offset: 412, partition: 0, highWaterOffset: 413, key: null }
 });
+
+
+
+//------------------
+// STREAM
+//------------------
+
+const Transform = require('stream').Transform;
+const ProducerStream = require('./node_modules/kafka-node/lib/producerStream');
+const ConsumerGroupStream = require('./node_modules/kafka-node/lib/consumerGroupStream');
+const resultProducer = new ProducerStream();
+
+const consumerOptions = {
+  kafkaHost: '127.0.0.1:9092',
+  groupId: 'ExampleTestGroup',
+  sessionTimeout: 15000,
+  protocol: ['roundrobin'],
+  asyncPush: false,
+  id: 'consumer1',
+  fromOffset: 'latest'
+};
+
+const consumerGroup = new ConsumerGroupStream(consumerOptions, 'ExampleTopic');
+
+const messageTransform = new Transform({
+  objectMode: true,
+  decodeStrings: true,
+  transform (message, encoding, callback) {
+    console.log(`Received message ${message.value} transforming input`);
+    callback(null, {
+      topic: 'RebalanceTopic',
+      messages: `You have been (${message.value}) made an example of`
+    });
+  }
+});
+
+consumerGroup.pipe(messageTransform).pipe(resultProducer);
+
+
+
+
 
 
 
